@@ -1,7 +1,10 @@
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
-import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ValidationPipe } from '@nestjs/common/pipes/validation.pipe';
+import { AuthGuard } from '@nestjs/passport';
+import { GetUser } from './get-user.decorator';
+import { User } from './user.entity';
 
 @Controller('auth')
 export class AuthController {
@@ -10,5 +13,16 @@ export class AuthController {
     @Post('/signup')
     signup(@Body(new ValidationPipe({exceptionFactory: (errors) => new BadRequestException(errors)})) authCredentialsDto: AuthCredentialsDto): Promise<void> {
         return this.authService.signup(authCredentialsDto);
+    }
+
+    @Post('/signin')
+    signin(@Body() authCredentialsDto: AuthCredentialsDto): Promise<{accessToken: string}> {
+        return this.authService.signin(authCredentialsDto);
+    }
+
+    @Post('/test')
+    @UseGuards(AuthGuard())
+    test(@GetUser() user: User) {
+        console.log(user);
     }
 }
